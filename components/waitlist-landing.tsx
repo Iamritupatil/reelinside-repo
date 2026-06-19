@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, type FormEvent } from "react"
 import Image from "next/image"
-import { supabaseBrowser } from "@/lib/supabase/client"
+import { getSupabaseBrowser } from "@/lib/supabase/client"
 
 const NOISE =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"
@@ -17,7 +17,7 @@ export function WaitlistLanding() {
 
   // Safe public count via a SECURITY DEFINER function — never exposes emails.
   const fetchCount = useCallback(async () => {
-    const { data, error } = await supabaseBrowser.rpc("waitlist_count")
+    const { data, error } = await getSupabaseBrowser()!.rpc("waitlist_count")
     if (!error && typeof data === "number") setCount(data)
   }, [])
 
@@ -40,7 +40,8 @@ export function WaitlistLanding() {
       // Calls the SECURITY DEFINER function directly with the anon key. All
       // enforcement (rate limit / format / disposable / honeypot) lives in the
       // DB, so this is the only — and safe — path in.
-      const { data, error } = await supabaseBrowser.rpc("join_waitlist", {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (getSupabaseBrowser() as any).rpc("join_waitlist", {
         p_email: trimmed,
         p_website: website,
       })
